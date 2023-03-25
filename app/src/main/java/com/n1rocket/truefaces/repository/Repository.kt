@@ -11,6 +11,17 @@ import io.ktor.client.features.ClientRequestException
 class Repository(
     private val dataSource: IRestDataSource,
 ) : IRepository {
+    override suspend fun testRepo(): ApiResult<String> {
+        return try {
+            val response = dataSource.testRepo()
+            ApiSuccess(response)
+        } catch (e: ClientRequestException) {
+            ApiError(e.response.status.value, e.message)
+        } catch (e: Exception) {
+            ApiException(e)
+        }
+    }
+
     override suspend fun uploadImage(name: String, byteArray: ByteArray): ApiResult<String> {
         return try {
             val response = dataSource.uploadImage(name, byteArray)

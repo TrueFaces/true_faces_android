@@ -92,6 +92,9 @@ fun MainView(viewModel: MainViewModel = viewModel()) {
                 )
             }
         }
+        Button(onClick = { viewModel.testRepo() }) {
+            Text(text = "Test API")
+        }
         Button(onClick = { launcher.launch("image/*") }) {
             Text(text = "Elegir foto")
         }
