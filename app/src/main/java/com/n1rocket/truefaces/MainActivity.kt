@@ -21,6 +21,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +52,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainView(viewModel: MainViewModel = viewModel()) {
+
+    val uiState = viewModel.uiState.collectAsState()
 
     var imageUri by remember {
         mutableStateOf<Uri?>(null)
@@ -88,7 +91,9 @@ fun MainView(viewModel: MainViewModel = viewModel()) {
                 Image(
                     bitmap = btm.asImageBitmap(),
                     contentDescription = null,
-                    modifier = Modifier.size(400.dp)
+                    modifier = Modifier
+                        .size(400.dp)
+                        .padding(16.dp)
                 )
             }
         }
@@ -98,7 +103,11 @@ fun MainView(viewModel: MainViewModel = viewModel()) {
         Button(onClick = { launcher.launch("image/*") }) {
             Text(text = "Elegir foto")
         }
-        Text(text = "")
+        when (val state = uiState.value){
+            is UiState.FinishState -> Text(text = state.message)
+            is UiState.UploadingState -> Text(text = "Subiendo la foto")
+            else -> {}
+        }
     }
 
 
