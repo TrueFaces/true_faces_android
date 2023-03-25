@@ -13,7 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
-    private val repository = Repository(RestDataSource(url = ""))
+    //private val repository = Repository(RestDataSource(url = "https://apifast-2-r0282118.deta.app"))
+    private val repository = Repository(RestDataSource(url = "https://apifast-1-r0282118.deta.app"))
 
     fun testRepo() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -27,11 +28,15 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun uploadImage(name: String, byteArray: ByteArray): ApiResult<String>? {
-        var result: ApiResult<String>? = null
+    fun uploadImage(name: String, byteArray: ByteArray) {
         CoroutineScope(Dispatchers.IO).launch {
-            result = repository.uploadImage(name, byteArray)
+            val result = repository.uploadImage(name, byteArray)
+            when(result){
+                is ApiSuccess -> Log.d("MainViewModel", "Result: ${result.data}")
+                is ApiError -> Log.d("MainViewModel", "Result code: ${result.code} message: ${result.message}")
+                is ApiException -> Log.d("MainViewModel", "Result Exc: ${result.e.localizedMessage}")
+            }
+            Log.d("MainViewModel", "Result: $result")
         }
-        return result
     }
 }

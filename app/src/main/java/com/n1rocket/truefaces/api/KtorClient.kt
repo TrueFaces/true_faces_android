@@ -23,7 +23,7 @@ internal object KtorClient {
 
     private val client = HttpClient(Android) {
         defaultRequest {
-            header(CONTENT_TYPE, "application/json")
+            //header(CONTENT_TYPE, "application/json")
         }
         if (BuildConfig.DEBUG) {
             install(Logging) {
