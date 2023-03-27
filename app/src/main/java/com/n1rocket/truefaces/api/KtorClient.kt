@@ -1,17 +1,16 @@
 package com.n1rocket.truefaces.api
 
-import com.n1rocket.truefaces.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.features.logging.ANDROID
 import io.ktor.client.features.logging.DEFAULT
 import io.ktor.client.features.logging.LogLevel
 import io.ktor.client.features.logging.Logger
 import io.ktor.client.features.logging.Logging
-import io.ktor.client.request.header
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
@@ -25,11 +24,9 @@ internal object KtorClient {
         defaultRequest {
             //header(CONTENT_TYPE, "application/json")
         }
-        if (BuildConfig.DEBUG) {
-            install(Logging) {
-                logger = Logger.DEFAULT
-                level = LogLevel.ALL
-            }
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.ALL
         }
         install(JsonFeature) {
             serializer = KotlinxSerializer(

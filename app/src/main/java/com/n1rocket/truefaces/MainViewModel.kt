@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     //private val repository = Repository(RestDataSource(url = "https://apifast-2-r0282118.deta.app"))
-    private val repository = Repository(RestDataSource(url = "https://apifast-1-r0282118.deta.app"))
+    //private val repository = Repository(RestDataSource(url = "https://apifast-1-r0282118.deta.app"))
+    private val repository = Repository(RestDataSource(url = "https://truefaces-api-ygmgobsv6q-ew.a.run.app"))
 
     // UI state
     private var _currentUiState: UiState = UiState.EmptyState
