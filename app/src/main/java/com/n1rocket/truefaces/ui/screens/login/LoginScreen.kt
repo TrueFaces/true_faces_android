@@ -59,8 +59,9 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
         Button(onClick = { viewModel.login(user, password) }) {
             Text(text = "Login")
         }
-        when (uiState.value) {
+        when (val st = uiState.value) {
             UiLoginState.FinishState -> Text(text = "Ha iniciado sesión correctamente")
+            is UiLoginState.ErrorState -> Text(text = "Ha ocurrido un error: ${st.code} ${st.message}")
             UiLoginState.LoadingState -> CircularProgressIndicator()
             else -> {}
         }

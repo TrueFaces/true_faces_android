@@ -6,6 +6,7 @@ import com.n1rocket.truefaces.api.ApiResult
 import com.n1rocket.truefaces.api.ApiSuccess
 import com.n1rocket.truefaces.datasources.IPreferencesDataSource
 import com.n1rocket.truefaces.datasources.IRestDataSource
+import com.n1rocket.truefaces.ui.screens.login.LoginResponse
 import io.ktor.client.features.ClientRequestException
 
 @Suppress("TooGenericExceptionCaught")
@@ -37,7 +38,7 @@ class Repository(
 
     override fun isLogged() = preferencesDataSource.isLogged()
 
-    override suspend fun login(user: String, password: String): ApiResult<String> {
+    override suspend fun login(user: String, password: String): ApiResult<LoginResponse> {
         return try {
             val response = dataSource.login(user, password)
             ApiSuccess(response)
@@ -46,5 +47,9 @@ class Repository(
         } catch (e: Exception) {
             ApiException(e)
         }
+    }
+
+    override suspend fun saveToken(accessToken: String) {
+        preferencesDataSource.saveToken(accessToken)
     }
 }

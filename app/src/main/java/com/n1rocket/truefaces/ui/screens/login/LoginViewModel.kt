@@ -1,11 +1,11 @@
 package com.n1rocket.truefaces.ui.screens.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
 import com.n1rocket.truefaces.repository.Repository
+import com.n1rocket.truefaces.ui.AuthorizationViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val repository: Repository,
+) : ViewModel() {
 
     // UI state
     private var _currentUiState: UiLoginState = UiLoginState.EmptyState
@@ -26,13 +28,14 @@ class LoginViewModel @Inject constructor(private val repository: Repository) : V
     fun login(user: String, password: String) {
         _uiState.value = UiLoginState.LoadingState
         CoroutineScope(Dispatchers.IO).launch {
-            val message = when (val result = repository.login(user, password)) {
-                is ApiSuccess -> result.data
-                is ApiError -> "Result code: ${result.code} message: ${result.message}"
-                is ApiException -> "Exception: ${result.e.localizedMessage}"
+            when (val result = repository.login(user, password)) {
+                is ApiSuccess -> {
+                    repository.saveToken(result.data.access_token)
+                    _uiState.value = UiLoginState.FinishState
+                }
+                is ApiError -> _uiState.value = UiLoginState.ErrorState(result.code, result.message)
+                is ApiException -> _uiState.value = UiLoginState.ErrorState(500, result.e.localizedMessage)
             }
-            Log.d("LoginViewModel", message)
-            _uiState.value = UiLoginState.FinishState
         }
     }
 }

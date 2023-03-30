@@ -1,7 +1,9 @@
 package com.n1rocket.truefaces.datasources
 
 import com.n1rocket.truefaces.api.KtorClient
+import com.n1rocket.truefaces.ui.screens.login.LoginResponse
 import io.ktor.client.features.onUpload
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
@@ -44,11 +46,11 @@ internal class RestDataSource(private val url: String) : IRestDataSource {
         }
     }
 
-    override suspend fun login(user: String, password: String): String {
+    override suspend fun login(user: String, password: String): LoginResponse {
         return httpClient.submitForm(
-            url = "$url/login/",
+            url = "$url/login",
             formParameters = Parameters.build {
-                append("user", user)
+                append("username", user)
                 append("password", password)
             }
         )
