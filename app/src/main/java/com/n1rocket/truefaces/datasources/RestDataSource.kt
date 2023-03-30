@@ -4,12 +4,13 @@ import com.n1rocket.truefaces.api.KtorClient
 import io.ktor.client.features.onUpload
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.Parameters
 import io.ktor.http.Url
 import io.ktor.utils.io.core.buildPacket
 import io.ktor.utils.io.core.writeFully
@@ -41,5 +42,15 @@ internal class RestDataSource(private val url: String) : IRestDataSource {
                 println("Sent $bytesSentTotal bytes from $contentLength")
             }
         }
+    }
+
+    override suspend fun login(user: String, password: String): String {
+        return httpClient.submitForm(
+            url = "$url/login/",
+            formParameters = Parameters.build {
+                append("user", user)
+                append("password", password)
+            }
+        )
     }
 }

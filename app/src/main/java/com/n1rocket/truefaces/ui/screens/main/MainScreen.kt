@@ -1,24 +1,18 @@
-package com.n1rocket.truefaces
+package com.n1rocket.truefaces.ui.screens.main
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.provider.MediaStore
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,28 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.n1rocket.truefaces.ui.theme.TrueFacesTheme
+import androidx.navigation.NavHostController
 import java.io.IOException
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            TrueFacesTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-                    MainView()
-                }
-            }
-        }
-    }
-}
-
 @Composable
-fun MainView(viewModel: MainViewModel = viewModel()) {
+fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
 
     val uiState = viewModel.uiState.collectAsState()
 
@@ -97,15 +75,12 @@ fun MainView(viewModel: MainViewModel = viewModel()) {
                 )
             }
         }
-        Button(onClick = { viewModel.testRepo() }) {
-            Text(text = "Test API")
-        }
         Button(onClick = { launcher.launch("image/*") }) {
             Text(text = "Elegir foto")
         }
-        when (val state = uiState.value){
-            is UiState.FinishState -> Text(text = state.message)
-            is UiState.UploadingState -> Text(text = "Subiendo la foto")
+        when (val state = uiState.value) {
+            is UiMainState.FinishState -> Text(text = state.message)
+            is UiMainState.UploadingState -> Text(text = "Subiendo la foto")
             else -> {}
         }
     }
@@ -114,13 +89,11 @@ fun MainView(viewModel: MainViewModel = viewModel()) {
 }
 
 @Throws(IOException::class)
-private fun readBytes(context: Context, uri: Uri): ByteArray? =
-    context.contentResolver.openInputStream(uri)?.buffered()?.use { it.readBytes() }
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    TrueFacesTheme {
-        MainView()
+private fun readBytes(context: Context, uri: Uri): ByteArray? {
+    context.contentResolver.apply {
+        val inputStream = openInputStream(uri)
+        val result = inputStream?.buffered()?.use { it.readBytes() }
+        inputStream?.close()
+        return result
     }
 }

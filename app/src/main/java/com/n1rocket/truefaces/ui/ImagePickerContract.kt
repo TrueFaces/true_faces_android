@@ -1,4 +1,4 @@
-package com.n1rocket.truefaces
+package com.n1rocket.truefaces.ui
 
 import android.app.Activity
 import android.content.Context
