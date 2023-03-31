@@ -3,7 +3,6 @@ package com.n1rocket.truefaces.datasources
 import com.n1rocket.truefaces.api.KtorClient
 import com.n1rocket.truefaces.ui.screens.login.LoginResponse
 import io.ktor.client.features.onUpload
-import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
@@ -19,15 +18,19 @@ import io.ktor.utils.io.core.writeFully
 
 internal class RestDataSource(private val url: String) : IRestDataSource {
     private val httpClient by lazy { KtorClient.getInstance }
-    override suspend fun testRepo(): String {
-        return httpClient.get(url = Url(url))
+    override suspend fun getImages(token: String): String {
+        return httpClient.get(url = Url("$url/images/")){
+            headers {
+                append("Authorization", "Bearer $token")
+            }
+        }
     }
 
-    override suspend fun uploadImage(name: String, byteArray: ByteArray): String {
-        return httpClient.post("$url/uploadfile/") {
+    override suspend fun uploadImage(name: String, byteArray: ByteArray, token: String): String {
+        return httpClient.post("$url/images/upload/") {
             headers {
                 //append("Content-Type", ContentType.Application.Json)
-                //append("Authorization", "Bearer $token")
+                append("Authorization", "Bearer $token")
             }
             body = MultiPartFormDataContent(
                 formData {

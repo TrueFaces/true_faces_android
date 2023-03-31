@@ -8,4 +8,5 @@ class PreferencesDataSource(private val prefManager: PrefManager) : IPreferences
     }
 
     override fun isLogged(): Boolean = prefManager.token.isNotEmpty()
+    override fun getToken(): String = prefManager.token
 }

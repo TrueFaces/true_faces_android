@@ -14,9 +14,9 @@ class Repository(
     private val dataSource: IRestDataSource,
     private val preferencesDataSource: IPreferencesDataSource,
 ) : IRepository {
-    override suspend fun testRepo(): ApiResult<String> {
+    override suspend fun getImages(): ApiResult<String> {
         return try {
-            val response = dataSource.testRepo()
+            val response = dataSource.getImages(preferencesDataSource.getToken())
             ApiSuccess(response)
         } catch (e: ClientRequestException) {
             ApiError(e.response.status.value, e.message)
@@ -27,7 +27,7 @@ class Repository(
 
     override suspend fun uploadImage(name: String, byteArray: ByteArray): ApiResult<String> {
         return try {
-            val response = dataSource.uploadImage(name, byteArray)
+            val response = dataSource.uploadImage(name, byteArray, preferencesDataSource.getToken())
             ApiSuccess(response)
         } catch (e: ClientRequestException) {
             ApiError(e.response.status.value, e.message)
@@ -35,8 +35,6 @@ class Repository(
             ApiException(e)
         }
     }
-
-    override fun isLogged() = preferencesDataSource.isLogged()
 
     override suspend fun login(user: String, password: String): ApiResult<LoginResponse> {
         return try {
@@ -48,6 +46,8 @@ class Repository(
             ApiException(e)
         }
     }
+
+    override fun isLogged() = preferencesDataSource.isLogged()
 
     override suspend fun saveToken(accessToken: String) {
         preferencesDataSource.saveToken(accessToken)

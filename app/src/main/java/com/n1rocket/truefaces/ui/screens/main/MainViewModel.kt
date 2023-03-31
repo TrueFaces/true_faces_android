@@ -22,6 +22,18 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
     private val _uiState = MutableStateFlow(_currentUiState)
     val uiState: StateFlow<UiMainState> = _uiState.asStateFlow()
 
+    fun getImages() {
+        _uiState.value = UiMainState.LoadingState
+        CoroutineScope(Dispatchers.IO).launch {
+            val message = when (val result = repository.getImages()) {
+                is ApiSuccess -> result.data
+                is ApiError -> "Result code: ${result.code} message: ${result.message}"
+                is ApiException -> "Exception: ${result.e.localizedMessage}"
+            }
+            _uiState.value = UiMainState.FinishState(message = message)
+        }
+    }
+
     fun uploadImage(name: String, byteArray: ByteArray) {
         _uiState.value = UiMainState.UploadingState
         CoroutineScope(Dispatchers.IO).launch {
@@ -31,6 +43,7 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
             _uiState.value = UiMainState.FinishState(message = message)
+            getImages()
         }
     }
 }
