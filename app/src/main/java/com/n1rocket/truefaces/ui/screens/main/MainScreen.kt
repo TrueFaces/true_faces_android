@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,12 +28,14 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -42,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,11 +71,21 @@ import java.io.IOException
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
+    var owner by remember { mutableStateOf("") }
 
     val uiState = viewModel.uiState.collectAsState()
 
     val context = LocalContext.current
 
+    when (val st = uiState.value) {
+        UiMainState.EmptyState -> Log.d("MainScreen", "---> Empty")
+        is UiMainState.FinishState -> {
+            owner = st.owner
+            Log.d("MainScreen", "---> Finish: ${st.message}")
+        }
+        UiMainState.LoadingState -> Log.d("MainScreen", "---> LoadingState")
+        UiMainState.UploadingState -> Log.d("MainScreen", "---> UploadingState")
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract =
@@ -81,19 +95,23 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
     }
 
     LaunchedEffect(Unit) {
+        viewModel.getMyProfile()
         viewModel.getImages()
     }
 
     Scaffold(
         topBar = {
             TopAppBar {
-                Column {
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.Center) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Galería",
+                            text = "Galería de $owner",
                             style = TextStyle(fontSize = 24.sp),
                         )
+                        IconButton(onClick = { viewModel.logout() }) {
+                            Icon(imageVector = Icons.Default.Logout, contentDescription = "Cerrar sesión")
+                        }
                     }
                     if (uiState.value is UiMainState.LoadingState) {
                         LinearProgressIndicator()
@@ -180,11 +198,8 @@ fun MediaListItem(item: MediaItem, modifier: Modifier = Modifier) {
             .build(),
         onSuccess = {
             Palette.Builder(it.result.drawable.toBitmap()).generate { palette ->
-                Log.d("TAG", "palette: $palette")
                 val vibrant = palette?.dominantSwatch
-                Log.d("TAG", "vibrant: $vibrant")
                 colorTintDark = vibrant?.rgb?.isColorDark(0.7f) == false
-                Log.d("TAG", "colorTintDark: $colorTintDark")
             }
         })
 

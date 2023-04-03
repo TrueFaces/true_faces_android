@@ -6,8 +6,12 @@ import com.n1rocket.truefaces.api.ApiResult
 import com.n1rocket.truefaces.api.ApiSuccess
 import com.n1rocket.truefaces.datasources.IPreferencesDataSource
 import com.n1rocket.truefaces.datasources.IRestDataSource
+import com.n1rocket.truefaces.models.MeResponse
 import com.n1rocket.truefaces.ui.screens.login.LoginResponse
 import io.ktor.client.features.ClientRequestException
+import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 
 @Suppress("TooGenericExceptionCaught")
 class Repository(
@@ -47,9 +51,34 @@ class Repository(
         }
     }
 
+    override suspend fun me(): ApiResult<MeResponse> {
+        return try {
+            val response = dataSource.me(preferencesDataSource.getToken())
+            ApiSuccess(response)
+        } catch (e: ClientRequestException) {
+            checkAuthorized(e)
+            ApiError(e.response.status.value, e.message)
+        } catch (e: Exception) {
+            ApiException(e)
+        }
+    }
+
+    override fun getTokenFlow(viewModelScope: CoroutineScope): StateFlow<String> =
+        preferencesDataSource.getTokenFlow(viewModelScope)
+
+    private fun checkAuthorized(exception: ClientRequestException) {
+        if (exception.response.status == HttpStatusCode.Unauthorized) {
+            preferencesDataSource.clear()
+        }
+    }
+
     override fun isLogged() = preferencesDataSource.isLogged()
 
     override suspend fun saveToken(accessToken: String) {
         preferencesDataSource.saveToken(accessToken)
+    }
+
+    override fun logout() {
+        preferencesDataSource.clear()
     }
 }

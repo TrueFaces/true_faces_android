@@ -25,7 +25,7 @@ internal object KtorClient {
             //header(CONTENT_TYPE, "application/json")
         }
         install(Logging) {
-            logger = Logger.ANDROID
+            logger = Logger.DEFAULT
             level = LogLevel.ALL
         }
         install(JsonFeature) {

@@ -17,6 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
 
+    private var owner = ""
+
     // UI state
     private var _currentUiState: UiMainState = UiMainState.EmptyState
     private val _uiState = MutableStateFlow(_currentUiState)
@@ -30,7 +32,22 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            _uiState.value = UiMainState.FinishState(message = message)
+            _uiState.value = UiMainState.FinishState(message = message, owner = owner)
+        }
+    }
+
+    fun getMyProfile() {
+        _uiState.value = UiMainState.LoadingState
+        CoroutineScope(Dispatchers.IO).launch {
+            val message = when (val result = repository.me()) {
+                is ApiSuccess -> {
+                    owner = result.data.username
+                    result.data.username
+                }
+                is ApiError -> "Result code: ${result.code} message: ${result.message}"
+                is ApiException -> "Exception: ${result.e.localizedMessage}"
+            }
+            _uiState.value = UiMainState.FinishState(message = message, owner = owner)
         }
     }
 
@@ -42,8 +59,12 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            _uiState.value = UiMainState.FinishState(message = message)
+            _uiState.value = UiMainState.FinishState(message = message, owner = owner)
             getImages()
         }
+    }
+
+    fun logout() {
+        repository.logout()
     }
 }

@@ -1,6 +1,7 @@
 package com.n1rocket.truefaces.datasources
 
 import com.n1rocket.truefaces.api.KtorClient
+import com.n1rocket.truefaces.models.MeResponse
 import com.n1rocket.truefaces.ui.screens.login.LoginResponse
 import io.ktor.client.features.onUpload
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -51,11 +52,18 @@ internal class RestDataSource(private val url: String) : IRestDataSource {
 
     override suspend fun login(user: String, password: String): LoginResponse {
         return httpClient.submitForm(
-            url = "$url/login",
+            url = "$url/auth/login",
             formParameters = Parameters.build {
                 append("username", user)
                 append("password", password)
             }
         )
+    }
+    override suspend fun me(token: String): MeResponse {
+        return httpClient.get(url = Url("$url/auth/me")){
+            headers {
+                append("Authorization", "Bearer $token")
+            }
+        }
     }
 }
