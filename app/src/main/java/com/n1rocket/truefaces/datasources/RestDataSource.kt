@@ -22,7 +22,7 @@ import io.ktor.utils.io.core.writeFully
 internal class RestDataSource(private val url: String) : IRestDataSource {
     private val httpClient by lazy { KtorClient.getInstance }
     override suspend fun getImages(token: String): List<ImagesResponse> {
-        return httpClient.get(url = Url("$url/images/")){
+        return httpClient.get(url = Url("$url/users/images")){
             headers {
                 append("Authorization", "Bearer $token")
             }
@@ -30,7 +30,7 @@ internal class RestDataSource(private val url: String) : IRestDataSource {
     }
 
     override suspend fun uploadImage(name: String, byteArray: ByteArray, token: String): String {
-        return httpClient.post("$url/images/upload/") {
+        return httpClient.post("$url/users/upload/") {
             headers {
                 //append("Content-Type", ContentType.Application.Json)
                 append("Authorization", "Bearer $token")

@@ -190,6 +190,13 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                         style = TextStyle(fontSize = 28.sp, textAlign = TextAlign.Center)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    Button({ viewModel.getImages() }) {
+                        Text(
+                            text = "Recargar",
+                            style = TextStyle(fontSize = 24.sp, textAlign = TextAlign.Center)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     Button({ launcher.launch("image/*") }) {
                         Text(
                             text = "Sube tu primera foto",
