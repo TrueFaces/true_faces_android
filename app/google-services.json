@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "122579738389",
+    "project_id": "truefaces-211df",
+    "storage_bucket": "truefaces-211df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122579738389:android:4989b45b68354617e6131c",
+        "android_client_info": {
+          "package_name": "com.n1rocket.truefaces"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "122579738389-pksifri6ruvudul8v9b9tq2gt7oc73gg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs8pxiKK3VUqMR81t_WiEJHHHwb7aJgDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "122579738389-pksifri6ruvudul8v9b9tq2gt7oc73gg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
