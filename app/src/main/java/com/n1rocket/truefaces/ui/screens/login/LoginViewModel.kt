@@ -5,7 +5,6 @@ import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
 import com.n1rocket.truefaces.repository.Repository
-import com.n1rocket.truefaces.ui.AuthorizationViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +29,7 @@ class LoginViewModel @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             when (val result = repository.login(user, password)) {
                 is ApiSuccess -> {
-                    repository.saveToken(result.data.access_token)
+                    repository.saveToken(result.data.accessToken)
                     _uiState.value = UiLoginState.FinishState
                 }
                 is ApiError -> _uiState.value = UiLoginState.ErrorState(result.code, result.message)

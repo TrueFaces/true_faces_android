@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.outlined.Photo
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -55,6 +57,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -78,7 +81,6 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
     val context = LocalContext.current
 
     when (val st = uiState.value) {
-        UiMainState.EmptyState -> Log.d("MainScreen", "---> Empty")
         is UiMainState.FinishState -> {
             owner = st.owner
             Log.d("MainScreen", "---> Finish: ${st.message}")
@@ -139,14 +141,25 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
             rememberPullRefreshState(uiState.value is UiMainState.LoadingState, { viewModel.getImages() })
 
 
-        ConstraintLayout {
-            val (indicator, grid) = createRefs()
+        ConstraintLayout(
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize()
+        ) {
+            val (indicator, grid, empty) = createRefs()
+
+            var mediaItems = listOf<MediaItem>()
+
+            when (val state = uiState.value) {
+                is UiMainState.FinishState -> mediaItems =
+                    state.images.map { MediaItem(it.id, it.imageUrl, it.hasFace) }
+                else -> {}
+            }
 
             LazyVerticalGrid(
                 contentPadding = PaddingValues(dimensionResource(id = R.dimen.padding_xs)),
                 columns = GridCells.Adaptive(dimensionResource(id = R.dimen.cell_min_width)),
                 modifier = Modifier
-                    .padding(it)
                     .pullRefresh(pullRefreshState)
                     .constrainAs(grid) {
                         top.linkTo(parent.top)
@@ -155,9 +168,34 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                         end.linkTo(parent.end)
                     }
             ) {
-
-                items(getMedia()) { item ->
+                items(mediaItems) { item ->
                     MediaListItem(item, Modifier.padding(dimensionResource(id = R.dimen.padding_xs)))
+                }
+            }
+
+            if (mediaItems.isEmpty()) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.constrainAs(empty) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Photo,
+                        contentDescription = "Foto",
+                        modifier = Modifier.size(56.dp)
+                    )
+                    Text(
+                        text = "Parece que aún no tienes fotos",
+                        style = TextStyle(fontSize = 28.sp, textAlign = TextAlign.Center)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button({ launcher.launch("image/*") }) {
+                        Text(
+                            text = "Sube tu primera foto",
+                            style = TextStyle(fontSize = 24.sp, textAlign = TextAlign.Center)
+                        )
+                    }
                 }
             }
 
@@ -170,6 +208,8 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                     end.linkTo(parent.end)
                 }
             )
+
+
         }
     }
 

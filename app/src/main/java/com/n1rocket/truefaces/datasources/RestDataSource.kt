@@ -1,8 +1,10 @@
 package com.n1rocket.truefaces.datasources
 
+import com.n1rocket.truefaces.api.ApiResult
 import com.n1rocket.truefaces.api.KtorClient
+import com.n1rocket.truefaces.models.ImagesResponse
 import com.n1rocket.truefaces.models.MeResponse
-import com.n1rocket.truefaces.ui.screens.login.LoginResponse
+import com.n1rocket.truefaces.models.LoginResponse
 import io.ktor.client.features.onUpload
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -19,7 +21,7 @@ import io.ktor.utils.io.core.writeFully
 
 internal class RestDataSource(private val url: String) : IRestDataSource {
     private val httpClient by lazy { KtorClient.getInstance }
-    override suspend fun getImages(token: String): String {
+    override suspend fun getImages(token: String): List<ImagesResponse> {
         return httpClient.get(url = Url("$url/images/")){
             headers {
                 append("Authorization", "Bearer $token")

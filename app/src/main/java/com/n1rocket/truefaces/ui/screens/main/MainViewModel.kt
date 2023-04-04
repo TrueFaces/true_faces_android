@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
+import com.n1rocket.truefaces.models.ImagesResponse
 import com.n1rocket.truefaces.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -18,26 +19,30 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
 
     private var owner = ""
+    private var images = listOf<ImagesResponse>()
 
     // UI state
-    private var _currentUiState: UiMainState = UiMainState.EmptyState
+    private var _currentUiState: UiMainState = UiMainState.LoadingState
     private val _uiState = MutableStateFlow(_currentUiState)
     val uiState: StateFlow<UiMainState> = _uiState.asStateFlow()
 
     fun getImages() {
-        _uiState.value = UiMainState.LoadingState
+        updateState(UiMainState.LoadingState)
         CoroutineScope(Dispatchers.IO).launch {
             val message = when (val result = repository.getImages()) {
-                is ApiSuccess -> result.data
+                is ApiSuccess -> {
+                    images = result.data
+                    result.data.size.toString()
+                }
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            _uiState.value = UiMainState.FinishState(message = message, owner = owner)
+            updateState(UiMainState.FinishState(message = message, owner = owner, images = images))
         }
     }
 
     fun getMyProfile() {
-        _uiState.value = UiMainState.LoadingState
+        updateState(UiMainState.LoadingState)
         CoroutineScope(Dispatchers.IO).launch {
             val message = when (val result = repository.me()) {
                 is ApiSuccess -> {
@@ -47,24 +52,29 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            _uiState.value = UiMainState.FinishState(message = message, owner = owner)
+            updateState(UiMainState.FinishState(message = message, owner = owner, images = images))
         }
     }
 
     fun uploadImage(name: String, byteArray: ByteArray) {
-        _uiState.value = UiMainState.UploadingState
+        updateState(UiMainState.UploadingState)
         CoroutineScope(Dispatchers.IO).launch {
             val message = when (val result = repository.uploadImage(name, byteArray)) {
                 is ApiSuccess -> result.data
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            _uiState.value = UiMainState.FinishState(message = message, owner = owner)
+            updateState(UiMainState.FinishState(message = message, owner = owner, images = images))
             getImages()
         }
     }
 
     fun logout() {
         repository.logout()
+    }
+
+    fun updateState(state: UiMainState) {
+        _currentUiState = state
+        _uiState.value = state
     }
 }

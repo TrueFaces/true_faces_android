@@ -6,8 +6,9 @@ import com.n1rocket.truefaces.api.ApiResult
 import com.n1rocket.truefaces.api.ApiSuccess
 import com.n1rocket.truefaces.datasources.IPreferencesDataSource
 import com.n1rocket.truefaces.datasources.IRestDataSource
+import com.n1rocket.truefaces.models.ImagesResponse
 import com.n1rocket.truefaces.models.MeResponse
-import com.n1rocket.truefaces.ui.screens.login.LoginResponse
+import com.n1rocket.truefaces.models.LoginResponse
 import io.ktor.client.features.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +19,7 @@ class Repository(
     private val dataSource: IRestDataSource,
     private val preferencesDataSource: IPreferencesDataSource,
 ) : IRepository {
-    override suspend fun getImages(): ApiResult<String> {
+    override suspend fun getImages(): ApiResult<List<ImagesResponse>> {
         return try {
             val response = dataSource.getImages(preferencesDataSource.getToken())
             ApiSuccess(response)

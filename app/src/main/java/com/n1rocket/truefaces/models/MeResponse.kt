@@ -1,9 +1,11 @@
 package com.n1rocket.truefaces.models
 
+import kotlinx.serialization.SerialName
+
 @kotlinx.serialization.Serializable
 data class MeResponse(
     val email: String,
     val username: String,
     val id: Int,
-    val is_active: Boolean
+    @SerialName("is_active") val isActive: Boolean
 )
