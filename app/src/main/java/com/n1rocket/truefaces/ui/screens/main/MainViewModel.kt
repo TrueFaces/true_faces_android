@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
-import com.n1rocket.truefaces.models.ImagesResponse
 import com.n1rocket.truefaces.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -19,30 +18,39 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
 
     private var owner = ""
-    private var images = listOf<ImagesResponse>()
+    private var images = listOf<MediaItem>()
 
     // UI state
-    private var _currentUiState: UiMainState = UiMainState.LoadingState
+    private var _currentUiState: UiMainState = UiMainState(true)
     private val _uiState = MutableStateFlow(_currentUiState)
     val uiState: StateFlow<UiMainState> = _uiState.asStateFlow()
 
     fun getImages() {
-        updateState(UiMainState.LoadingState)
+        updateState(_currentUiState.copy(isLoading = true))
         CoroutineScope(Dispatchers.IO).launch {
             val message = when (val result = repository.getImages()) {
                 is ApiSuccess -> {
-                    images = result.data
+                    images = result.data.map { MediaItem(it.id, it.imageUrl, it.hasFace) }
+                    images = images.reversed()
                     result.data.size.toString()
                 }
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            updateState(UiMainState.FinishState(message = message, owner = owner, images = images))
+            updateState(
+                _currentUiState.copy(
+                    isLoading = false,
+                    isUploading = false,
+                    message = message,
+                    owner = owner,
+                    images = images
+                )
+            )
         }
     }
 
     fun getMyProfile() {
-        updateState(UiMainState.LoadingState)
+        updateState(_currentUiState.copy(isLoading = true))
         CoroutineScope(Dispatchers.IO).launch {
             val message = when (val result = repository.me()) {
                 is ApiSuccess -> {
@@ -52,19 +60,35 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            updateState(UiMainState.FinishState(message = message, owner = owner, images = images))
+            updateState(
+                _currentUiState.copy(
+                    isLoading = false,
+                    isUploading = false,
+                    message = message,
+                    owner = owner,
+                    images = images
+                )
+            )
         }
     }
 
     fun uploadImage(name: String, byteArray: ByteArray) {
-        updateState(UiMainState.UploadingState)
+        updateState(_currentUiState.copy(isUploading = true))
         CoroutineScope(Dispatchers.IO).launch {
             val message = when (val result = repository.uploadImage(name, byteArray)) {
                 is ApiSuccess -> result.data
                 is ApiError -> "Result code: ${result.code} message: ${result.message}"
                 is ApiException -> "Exception: ${result.e.localizedMessage}"
             }
-            updateState(UiMainState.FinishState(message = message, owner = owner, images = images))
+            updateState(
+                _currentUiState.copy(
+                    isLoading = false,
+                    isUploading = false,
+                    message = message,
+                    owner = owner,
+                    images = images
+                )
+            )
             getImages()
         }
     }

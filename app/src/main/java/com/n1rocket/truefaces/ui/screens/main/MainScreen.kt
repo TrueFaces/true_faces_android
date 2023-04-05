@@ -4,7 +4,6 @@ package com.n1rocket.truefaces.ui.screens.main
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -47,7 +46,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,20 +72,10 @@ import java.io.IOException
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
-    var owner by remember { mutableStateOf("") }
 
     val uiState = viewModel.uiState.collectAsState()
 
     val context = LocalContext.current
-
-    when (val st = uiState.value) {
-        is UiMainState.FinishState -> {
-            owner = st.owner
-            Log.d("MainScreen", "---> Finish: ${st.message} ${st.owner} ${st.images} ")
-        }
-        UiMainState.LoadingState -> Log.d("MainScreen", "---> LoadingState")
-        UiMainState.UploadingState -> Log.d("MainScreen", "---> UploadingState")
-    }
 
     val launcher = rememberLauncherForActivityResult(
         contract =
@@ -108,14 +96,14 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Galería de $owner",
+                            text = "Galería de ${uiState.value.owner}",
                             style = TextStyle(fontSize = 24.sp),
                         )
                         IconButton(onClick = { viewModel.logout() }) {
                             Icon(imageVector = Icons.Default.Logout, contentDescription = "Cerrar sesión")
                         }
                     }
-                    if (uiState.value is UiMainState.LoadingState) {
+                    if (uiState.value.isLoading) {
                         LinearProgressIndicator()
                     }
                 }
@@ -125,20 +113,20 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
             FloatingActionButton(
                 onClick = { launcher.launch("image/*") }
             ) {
-                if (uiState.value !is UiMainState.UploadingState) {
+                if (uiState.value.isUploading) {
+                    CircularProgressIndicator()
+                } else {
                     Icon(
                         imageVector = Icons.Default.UploadFile,
                         contentDescription = "Subir foto"
                     )
-                } else {
-                    CircularProgressIndicator()
                 }
             }
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
         val pullRefreshState =
-            rememberPullRefreshState(uiState.value is UiMainState.LoadingState, { viewModel.getImages() })
+            rememberPullRefreshState(uiState.value.isLoading, { viewModel.getImages() })
 
 
         ConstraintLayout(
@@ -147,14 +135,6 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                 .fillMaxSize()
         ) {
             val (indicator, grid, empty) = createRefs()
-
-            var mediaItems = listOf<MediaItem>()
-
-            when (val state = uiState.value) {
-                is UiMainState.FinishState -> mediaItems =
-                    state.images.map { MediaItem(it.id, it.imageUrl, it.hasFace) }
-                else -> {}
-            }
 
             LazyVerticalGrid(
                 contentPadding = PaddingValues(dimensionResource(id = R.dimen.padding_xs)),
@@ -169,12 +149,12 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                         end.linkTo(parent.end)
                     }
             ) {
-                items(mediaItems) { item ->
+                items(uiState.value.images) { item ->
                     MediaListItem(item, Modifier.padding(dimensionResource(id = R.dimen.padding_xs)))
                 }
             }
 
-            if (mediaItems.isEmpty()) {
+            if (uiState.value.images.isEmpty()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.constrainAs(empty) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
@@ -210,7 +190,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
             }
 
             PullRefreshIndicator(
-                refreshing = uiState.value is UiMainState.LoadingState,
+                refreshing = uiState.value.isLoading,
                 state = pullRefreshState,
                 modifier = Modifier.constrainAs(indicator) {
                     top.linkTo(parent.top)
