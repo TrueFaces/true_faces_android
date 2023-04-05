@@ -83,7 +83,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
     when (val st = uiState.value) {
         is UiMainState.FinishState -> {
             owner = st.owner
-            Log.d("MainScreen", "---> Finish: ${st.message}")
+            Log.d("MainScreen", "---> Finish: ${st.message} ${st.owner} ${st.images} ")
         }
         UiMainState.LoadingState -> Log.d("MainScreen", "---> LoadingState")
         UiMainState.UploadingState -> Log.d("MainScreen", "---> UploadingState")
@@ -161,6 +161,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                 columns = GridCells.Adaptive(dimensionResource(id = R.dimen.cell_min_width)),
                 modifier = Modifier
                     .pullRefresh(pullRefreshState)
+                    .fillMaxSize()
                     .constrainAs(grid) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)

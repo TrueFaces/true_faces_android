@@ -30,7 +30,7 @@ internal class RestDataSource(private val url: String) : IRestDataSource {
     }
 
     override suspend fun uploadImage(name: String, byteArray: ByteArray, token: String): String {
-        return httpClient.post("$url/users/upload/") {
+        return httpClient.post("$url/users/upload") {
             headers {
                 //append("Content-Type", ContentType.Application.Json)
                 append("Authorization", "Bearer $token")
