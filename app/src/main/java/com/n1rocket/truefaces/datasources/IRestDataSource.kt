@@ -7,7 +7,9 @@ import com.n1rocket.truefaces.models.LoginResponse
 
 interface IRestDataSource {
     suspend fun getImages(token: String): List<ImagesResponse>
-    suspend fun uploadImage(name: String, byteArray: ByteArray, token: String): String
+    suspend fun uploadImage(byteArray: ByteArray, token: String): String
+    suspend fun uploadAvatar(byteArray: ByteArray, token: String): String
+    suspend fun uploadAvatarBody(byteArray: ByteArray, token: String): String
     suspend fun login(user: String, password: String): LoginResponse
     suspend fun me(token: String): MeResponse
 }

@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 
 @kotlinx.serialization.Serializable
 data class MeResponse(
+    val avatar: String,
     val email: String,
     val username: String,
     val id: Int,

@@ -35,11 +35,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import com.n1rocket.truefaces.ui.Routes
 
 @Composable
-fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
+fun LoginScreen(onLoggedSuccess: (Boolean) -> Unit, viewModel: LoginViewModel) {
 
     val uiState = viewModel.uiState.collectAsState()
 
@@ -48,11 +46,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
 
     if (uiState.value is UiLoginState.FinishState) {
         LaunchedEffect(Unit) {
-            navController.navigate(Routes.Main.route) {
-                popUpTo(Routes.Login.route) {
-                    inclusive = true
-                }
-            }
+            onLoggedSuccess((uiState.value as UiLoginState.FinishState).hasAvatar)
         }
     }
 
@@ -105,7 +99,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
         }
 
         when (val st = uiState.value) {
-            UiLoginState.FinishState -> Text(text = "Ha iniciado sesión correctamente")
+            is UiLoginState.FinishState -> Text(text = "Ha iniciado sesión correctamente")
             is UiLoginState.ErrorState -> Text(text = "Ha ocurrido un error: ${st.code} ${st.message}")
             UiLoginState.LoadingState -> CircularProgressIndicator()
             else -> {}

@@ -30,9 +30,30 @@ class Repository(
         }
     }
 
-    override suspend fun uploadImage(name: String, byteArray: ByteArray): ApiResult<String> {
+    override suspend fun uploadImage(byteArray: ByteArray): ApiResult<String> {
         return try {
-            val response = dataSource.uploadImage(name, byteArray, preferencesDataSource.getToken())
+            val response = dataSource.uploadImage(byteArray, preferencesDataSource.getToken())
+            ApiSuccess(response)
+        } catch (e: ClientRequestException) {
+            ApiError(e.response.status.value, e.message)
+        } catch (e: Exception) {
+            ApiException(e)
+        }
+    }
+
+    override suspend fun uploadAvatar(byteArray: ByteArray): ApiResult<String> {
+        return try {
+            val response = dataSource.uploadAvatar(byteArray, preferencesDataSource.getToken())
+            ApiSuccess(response)
+        } catch (e: ClientRequestException) {
+            ApiError(e.response.status.value, e.message)
+        } catch (e: Exception) {
+            ApiException(e)
+        }
+    }
+    override suspend fun uploadAvatarBody(byteArray: ByteArray): ApiResult<String> {
+        return try {
+            val response = dataSource.uploadAvatarBody(byteArray, preferencesDataSource.getToken())
             ApiSuccess(response)
         } catch (e: ClientRequestException) {
             ApiError(e.response.status.value, e.message)
@@ -82,4 +103,13 @@ class Repository(
     override fun logout() {
         preferencesDataSource.clear()
     }
+
+    override fun saveAvatar(avatar: String) {
+        preferencesDataSource.saveAvatar(avatar)
+    }
+
+    override fun getToken(): String = preferencesDataSource.getToken()
+
+    fun getAvatar(): String = preferencesDataSource.getAvatar()
+
 }

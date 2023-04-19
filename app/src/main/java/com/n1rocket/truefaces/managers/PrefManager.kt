@@ -13,6 +13,10 @@ class PrefManager constructor(context: Context) {
         get() = pref.getString(KEY_TOKEN, "") ?: ""
         set(value) = pref.edit { putString(KEY_TOKEN, value) }
 
+    var avatar: String
+        get() = pref.getString(KEY_AVATAR, "") ?: ""
+        set(value) = pref.edit { putString(KEY_AVATAR, value) }
+
     private val pref = context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE)
 
     fun getTokenFlow(viewModelScope: CoroutineScope) = pref
@@ -28,5 +32,6 @@ class PrefManager constructor(context: Context) {
     companion object {
         private const val FILE_NAME = "PREFS_FILE_NAME"
         private const val KEY_TOKEN = "KEY_TOKEN"
+        private const val KEY_AVATAR = "KEY_AVATAR"
     }
 }

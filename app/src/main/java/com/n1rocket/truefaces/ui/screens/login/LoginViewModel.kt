@@ -30,8 +30,18 @@ class LoginViewModel @Inject constructor(
             when (val result = repository.login(user, password)) {
                 is ApiSuccess -> {
                     repository.saveToken(result.data.accessToken)
-                    _uiState.value = UiLoginState.FinishState
+
+                    val avatar = when (val me = repository.me()) {
+                        is ApiSuccess -> me.data.avatar
+                        is ApiError -> ""
+                        is ApiException -> ""
+                    }
+
+                    repository.saveAvatar(avatar)
+
+                    _uiState.value = UiLoginState.FinishState(avatar.isNotEmpty())
                 }
+
                 is ApiError -> _uiState.value = UiLoginState.ErrorState(result.code, result.message)
                 is ApiException -> _uiState.value = UiLoginState.ErrorState(500, result.e.localizedMessage)
             }

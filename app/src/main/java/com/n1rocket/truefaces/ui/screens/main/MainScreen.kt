@@ -2,8 +2,8 @@
 
 package com.n1rocket.truefaces.ui.screens.main
 
-import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -37,12 +37,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.outlined.Photo
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +69,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.n1rocket.truefaces.R
 import com.n1rocket.truefaces.utils.isColorDark
-import java.io.IOException
+import com.n1rocket.truefaces.utils.readBytes
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -77,11 +79,11 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
 
     val context = LocalContext.current
 
-    val launcher = rememberLauncherForActivityResult(
+    val imageLauncher = rememberLauncherForActivityResult(
         contract =
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { readBytes(context, it)?.let { bytes -> viewModel.uploadImage("image", bytes) } }
+        uri?.readBytes(context)?.let { bytes -> viewModel.uploadImage(bytes) }
     }
 
     LaunchedEffect(Unit) {
@@ -93,16 +95,15 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
         topBar = {
             TopAppBar {
                 Column(verticalArrangement = Arrangement.Center) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Galería de ${uiState.value.owner}",
-                            style = TextStyle(fontSize = 24.sp),
-                        )
-                        IconButton(onClick = { viewModel.logout() }) {
-                            Icon(imageVector = Icons.Default.Logout, contentDescription = "Cerrar sesión")
-                        }
-                    }
+                    TheToolbar(uiState = uiState,
+                        avatar = viewModel.getAvatar(),
+                        viewModel = viewModel,
+                        onAvatarClicked = {
+
+                        },
+                        onLogoutClicked = {
+                            viewModel.logout()
+                        })
                     if (uiState.value.isLoading) {
                         LinearProgressIndicator()
                     }
@@ -111,7 +112,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { launcher.launch("image/*") }
+                onClick = { imageLauncher.launch("image/*") }
             ) {
                 if (uiState.value.isUploading) {
                     CircularProgressIndicator()
@@ -150,7 +151,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                     }
             ) {
                 items(uiState.value.images) { item ->
-                    MediaListItem(item, Modifier.padding(dimensionResource(id = R.dimen.padding_xs)))
+                    MediaListItem(viewModel, item, Modifier.padding(dimensionResource(id = R.dimen.padding_xs)))
                 }
             }
 
@@ -179,7 +180,7 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Button({
-                        launcher.launch("image/*")
+                        imageLauncher.launch("image/*")
                     }) {
                         Text(
                             text = "Sube tu primera foto",
@@ -206,23 +207,71 @@ fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
 
 }
 
-@Throws(IOException::class)
-private fun readBytes(context: Context, uri: Uri): ByteArray? {
-    context.contentResolver.apply {
-        val inputStream = openInputStream(uri)
-        val result = inputStream?.buffered()?.use { it.readBytes() }
-        inputStream?.close()
-        return result
+@Composable
+fun TheToolbar(
+    onAvatarClicked: () -> Unit,
+    onLogoutClicked: () -> Unit,
+    uiState: State<UiMainState>,
+    avatar: String,
+    viewModel: MainViewModel
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.width(8.dp))
+
+        val imagePainter = rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current)
+                .addHeader("Authorization", "Bearer ${viewModel.getToken()}")
+                .data(data = avatar)
+                .allowHardware(false)
+                .build()
+        )
+
+        Image(
+            painter = imagePainter,
+            contentDescription = "Avatar",
+            modifier = Modifier.size(50.dp),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Galería de ${uiState.value.owner}",
+            style = TextStyle(fontSize = 24.sp),
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        IconButton(onClick = onLogoutClicked) {
+            Icon(imageVector = Icons.Default.Logout, contentDescription = "Cerrar sesión")
+        }
     }
 }
 
 @ExperimentalCoilApi
 @Composable
-fun MediaListItem(item: MediaItem, modifier: Modifier = Modifier) {
+fun MediaListItem(viewModel: MainViewModel, item: MediaItem, modifier: Modifier = Modifier) {
     var colorTintDark by rememberSaveable { mutableStateOf(true) }
+
+
+//    AsyncImage(
+//        model = ImageRequest.Builder(LocalContext.current)
+//            .data(uri)
+//            .addHeader("Authorization", "Bearer ${viewModel.getToken()}")
+//            .crossfade(true)
+//            .build(),
+//        placeholder = painterResource(R.drawable.ic_avatar),
+//        error = painterResource(id = R.drawable.ic_error),
+//        contentDescription = "Avatar",
+//        contentScale = ContentScale.Crop,
+//        modifier = Modifier
+//            .clip(CircleShape)
+//            .size(200.dp)
+//    )
+
+    Log.d("MainScreen", "URL: ${item.thumb}")
+    Log.d("MainScreen", "Token: ${viewModel.getToken()}")
 
     val imagePainter = rememberAsyncImagePainter(
         ImageRequest.Builder(LocalContext.current)
+            .addHeader("Authorization", "Bearer ${viewModel.getToken()}")
             .data(data = item.thumb)
             .allowHardware(false)
             .build(),

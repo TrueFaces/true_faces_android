@@ -9,6 +9,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.n1rocket.truefaces.ui.screens.avatar.AvatarScreen
 import com.n1rocket.truefaces.ui.screens.login.LoginScreen
 import com.n1rocket.truefaces.ui.screens.main.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,18 +24,50 @@ class MainActivity : ComponentActivity() {
 
             val tokenState = authorizationViewModel.state.collectAsState()
 
-            if (tokenState.value.isEmpty()){
+            if (tokenState.value.isEmpty()) {
                 Log.d("MainActivity", "TokenState: ${tokenState.value}")
             }
 
             NavHost(
                 navController = navController,
-                startDestination = if (authorizationViewModel.isLogged()) Routes.Main.route else Routes.Login.route,
+                startDestination = getStartDestination(authorizationViewModel),
             ) {
-                composable(Routes.Login.route) { LoginScreen(navController, hiltViewModel()) }
+                composable(Routes.Login.route) {
+                    LoginScreen(
+                        onLoggedSuccess = { hasAvatar ->
+
+                            if (hasAvatar) {
+                                navController.navigate(Routes.Main.route) {
+                                    popUpTo(Routes.Login.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            } else {
+                                navController.navigate(Routes.Avatar.route) {
+                                    popUpTo(Routes.Login.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                        }, hiltViewModel()
+                    )
+                }
+                composable(Routes.Avatar.route) { AvatarScreen(navController, hiltViewModel()) }
                 composable(Routes.Main.route) { MainScreen(navController, hiltViewModel()) }
             }
         }
     }
+
+    private fun getStartDestination(authorizationViewModel: AuthorizationViewModel): String = when {
+        authorizationViewModel.isLogged() ->
+            if (authorizationViewModel.hasAvatar()) {
+                Routes.Main.route
+            } else {
+                Routes.Avatar.route
+            }
+
+        else -> Routes.Login.route
+    }
+
 }
 

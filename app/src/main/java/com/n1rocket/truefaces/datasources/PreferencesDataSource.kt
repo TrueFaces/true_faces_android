@@ -10,6 +10,10 @@ class PreferencesDataSource(private val prefManager: PrefManager) : IPreferences
         prefManager.token = token ?: ""
     }
 
+    override fun saveAvatar(avatar: String) {
+        prefManager.avatar = avatar
+    }
+
     override fun clear() {
         prefManager.clear()
     }
@@ -19,6 +23,8 @@ class PreferencesDataSource(private val prefManager: PrefManager) : IPreferences
         Log.d("PreferencesDataSource", "Token: $token")
         return token.isNotEmpty()
     }
+
+    override fun getAvatar(): String = prefManager.avatar
     override fun getToken(): String = prefManager.token
     override fun getTokenFlow(viewModelScope: CoroutineScope): StateFlow<String> =
         prefManager.getTokenFlow(viewModelScope)

@@ -1,5 +1,7 @@
 package com.n1rocket.truefaces.api
 
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.features.HttpTimeout
@@ -18,16 +20,20 @@ import kotlinx.serialization.json.Json
 internal object KtorClient {
 
     private const val CONTENT_TYPE = "Content-Type"
-    private const val TIMEOUT = 15000L
+    private const val TIMEOUT = 30000L
 
     private val client = HttpClient(Android) {
         defaultRequest {
             //header(CONTENT_TYPE, "application/json")
         }
         install(Logging) {
-            logger = Logger.DEFAULT
+            logger = object: Logger {
+                override fun log(message: String) {
+                    Napier.v(message, null, "HTTP Client")
+                }
+            }
             level = LogLevel.ALL
-        }
+        }.also { Napier.base(DebugAntilog()) }
         install(JsonFeature) {
             serializer = KotlinxSerializer(
                 Json {

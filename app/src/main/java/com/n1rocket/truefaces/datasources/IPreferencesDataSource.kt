@@ -9,4 +9,6 @@ interface IPreferencesDataSource {
     fun isLogged() : Boolean
     fun getToken(): String
     fun getTokenFlow(viewModelScope: CoroutineScope): StateFlow<String>
+    fun saveAvatar(avatar: String)
+    fun getAvatar(): String
 }

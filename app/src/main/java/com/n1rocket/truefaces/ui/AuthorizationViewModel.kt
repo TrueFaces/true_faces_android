@@ -12,8 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthorizationViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
-
     val state: StateFlow<String> = repository.getTokenFlow(viewModelScope)
-
     fun isLogged() = repository.isLogged()
+    fun hasAvatar() = repository.getAvatar().isNotEmpty()
 }
