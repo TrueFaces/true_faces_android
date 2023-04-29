@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
-import com.n1rocket.truefaces.repository.Repository
+import com.n1rocket.truefaces.repository.IRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
+class MainViewModel @Inject constructor(private val repository: IRepository) : ViewModel() {
 
     private var owner = ""
     private var images = listOf<MediaItem>()
@@ -127,4 +127,24 @@ class MainViewModel @Inject constructor(private val repository: Repository) : Vi
 
     fun getToken(): String = repository.getToken()
     fun getAvatar(): String = repository.getAvatar()
+    fun deleteImage(id: Int) {
+        updateState(_currentUiState.copy(isLoading = true))
+        CoroutineScope(Dispatchers.IO).launch {
+            val message = when (val result = repository.deleteImage(id)) {
+                is ApiSuccess -> result.data
+                is ApiError -> "Result code: ${result.code} message: ${result.message}"
+                is ApiException -> "Exception: ${result.e.localizedMessage}"
+            }
+            updateState(
+                _currentUiState.copy(
+                    isLoading = false,
+                    isUploading = false,
+                    message = message,
+                    owner = owner,
+                    images = images
+                )
+            )
+            getImages()
+        }
+    }
 }

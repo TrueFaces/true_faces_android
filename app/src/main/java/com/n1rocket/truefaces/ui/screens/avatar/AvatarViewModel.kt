@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
+import com.n1rocket.truefaces.repository.IRepository
 import com.n1rocket.truefaces.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AvatarViewModel @Inject constructor(private val repository: Repository) : ViewModel() {
+class AvatarViewModel @Inject constructor(private val repository: IRepository) : ViewModel() {
     // UI state
     private var _currentUiState: UiAvatarState = UiAvatarState(true)
     private val _uiState = MutableStateFlow(_currentUiState)

@@ -110,6 +110,16 @@ class Repository(
 
     override fun getToken(): String = preferencesDataSource.getToken()
 
-    fun getAvatar(): String = preferencesDataSource.getAvatar()
+    override fun getAvatar(): String = preferencesDataSource.getAvatar()
+    override suspend fun deleteImage(id: Int): ApiResult<String> {
+        return try {
+            val response = dataSource.deleteImage(id, preferencesDataSource.getToken())
+            ApiSuccess(response)
+        } catch (e: ClientRequestException) {
+            ApiError(e.response.status.value, e.message)
+        } catch (e: Exception) {
+            ApiException(e)
+        }
+    }
 
 }

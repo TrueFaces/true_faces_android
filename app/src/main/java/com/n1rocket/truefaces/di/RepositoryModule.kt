@@ -2,6 +2,7 @@ package com.n1rocket.truefaces.di
 
 import com.n1rocket.truefaces.datasources.IPreferencesDataSource
 import com.n1rocket.truefaces.datasources.IRestDataSource
+import com.n1rocket.truefaces.repository.IRepository
 import com.n1rocket.truefaces.repository.Repository
 import dagger.Module
 import dagger.Provides
@@ -15,7 +16,7 @@ class RepositoryModule {
 
     @Singleton
     @Provides
-    fun repository(restDataSource: IRestDataSource, preferencesDataSource: IPreferencesDataSource): Repository {
+    fun repository(restDataSource: IRestDataSource, preferencesDataSource: IPreferencesDataSource): IRepository {
         return Repository(restDataSource, preferencesDataSource)
     }
 }

@@ -7,7 +7,7 @@ import com.n1rocket.truefaces.models.LoginResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
-internal interface IRepository {
+interface IRepository {
     suspend fun getImages(): ApiResult<List<ImagesResponse>>
     suspend fun uploadImage(byteArray: ByteArray): ApiResult<String>
     suspend fun uploadAvatar(byteArray: ByteArray): ApiResult<String>
@@ -20,4 +20,6 @@ internal interface IRepository {
     fun logout()
     fun saveAvatar(avatar: String)
     fun getToken(): String
+    fun getAvatar(): String
+    suspend fun deleteImage(id: Int): ApiResult<String>
 }

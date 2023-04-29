@@ -6,6 +6,7 @@ import com.n1rocket.truefaces.models.ImagesResponse
 import com.n1rocket.truefaces.models.LoginResponse
 import com.n1rocket.truefaces.models.MeResponse
 import io.ktor.client.features.onUpload
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
@@ -13,8 +14,6 @@ import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
-import io.ktor.http.ContentDisposition
-import io.ktor.http.ContentType.MultiPart.FormData
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
@@ -111,6 +110,14 @@ internal class RestDataSource(private val url: String) : IRestDataSource {
 
     override suspend fun me(token: String): MeResponse {
         return httpClient.get(url = Url("$url/auth/me")) {
+            headers {
+                append("Authorization", "Bearer $token")
+            }
+        }
+    }
+
+    override suspend fun deleteImage(id: Int, token: String): String {
+        return httpClient.delete(url = Url("$url/images/$id")) {
             headers {
                 append("Authorization", "Bearer $token")
             }

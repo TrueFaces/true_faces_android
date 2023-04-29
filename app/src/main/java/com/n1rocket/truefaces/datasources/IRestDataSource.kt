@@ -12,4 +12,5 @@ interface IRestDataSource {
     suspend fun uploadAvatarBody(byteArray: ByteArray, token: String): String
     suspend fun login(user: String, password: String): LoginResponse
     suspend fun me(token: String): MeResponse
+    suspend fun deleteImage(id: Int, token: String): String
 }

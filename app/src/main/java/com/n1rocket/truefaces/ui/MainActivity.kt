@@ -52,8 +52,8 @@ class MainActivity : ComponentActivity() {
                         }, hiltViewModel()
                     )
                 }
-                composable(Routes.Avatar.route) { AvatarScreen(navController, hiltViewModel()) }
-                composable(Routes.Main.route) { MainScreen(navController, hiltViewModel()) }
+                composable(Routes.Avatar.route) { AvatarScreen(hiltViewModel()) }
+                composable(Routes.Main.route) { MainScreen(hiltViewModel()) }
             }
         }
     }

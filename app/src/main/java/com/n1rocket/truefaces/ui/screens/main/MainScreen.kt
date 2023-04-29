@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
@@ -32,12 +34,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.UploadFile
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.outlined.Photo
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -53,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -73,7 +76,7 @@ import com.n1rocket.truefaces.utils.readBytes
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MainScreen(navController: NavHostController, viewModel: MainViewModel) {
+fun MainScreen(viewModel: MainViewModel) {
 
     val uiState = viewModel.uiState.collectAsState()
 
@@ -249,6 +252,7 @@ fun TheToolbar(
 @Composable
 fun MediaListItem(viewModel: MainViewModel, item: MediaItem, modifier: Modifier = Modifier) {
     var colorTintDark by rememberSaveable { mutableStateOf(true) }
+    var showConfirmDeleteDialogId: Int? by rememberSaveable { mutableStateOf(null) }
 
 
 //    AsyncImage(
@@ -282,10 +286,30 @@ fun MediaListItem(viewModel: MainViewModel, item: MediaItem, modifier: Modifier 
             }
         })
 
+    ConfirmDeletePhotoDialog(
+        show = showConfirmDeleteDialogId != null,
+        onConfirm = {
+            if (showConfirmDeleteDialogId != null) {
+                viewModel.deleteImage(showConfirmDeleteDialogId!!)
+            }
+            showConfirmDeleteDialogId = null
+        },
+        onCancel = {
+            showConfirmDeleteDialogId = null
+        })
+
     Box(
         modifier = modifier
             .height(dimensionResource(id = R.dimen.cell_thumb_height))
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = { /* Called when the gesture starts */ },
+                    onDoubleTap = { /* Called on Double Tap */ },
+                    onLongPress = { showConfirmDeleteDialogId = item.id },
+                    onTap = { /* Called on Tap */ }
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -305,5 +329,24 @@ fun MediaListItem(viewModel: MainViewModel, item: MediaItem, modifier: Modifier 
                 tint = if (colorTintDark) Color.Black else Color.White
             )
         }
+    }
+}
+
+@Composable
+fun ConfirmDeletePhotoDialog(show: Boolean, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    if (show) {
+        AlertDialog(
+            onDismissRequest = { },
+            confirmButton = {
+                TextButton(onClick = onConfirm)
+                { Text(text = "Borrar") }
+            },
+            dismissButton = {
+                TextButton(onClick = onCancel)
+                { Text(text = "Cancelar") }
+            },
+            title = { Text(text = "¿Quieres borrar la foto?") },
+            text = { Text(text = "¿Estás seguro de que quieres borrar la foto?") }
+        )
     }
 }

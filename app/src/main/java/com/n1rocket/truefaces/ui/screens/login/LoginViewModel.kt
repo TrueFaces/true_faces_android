@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.n1rocket.truefaces.api.ApiError
 import com.n1rocket.truefaces.api.ApiException
 import com.n1rocket.truefaces.api.ApiSuccess
+import com.n1rocket.truefaces.repository.IRepository
 import com.n1rocket.truefaces.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val repository: Repository,
+    private val repository: IRepository,
 ) : ViewModel() {
 
     // UI state
