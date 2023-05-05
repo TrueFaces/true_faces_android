@@ -18,6 +18,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,16 +43,24 @@ import com.n1rocket.truefaces.models.ImagesResponse
 import com.n1rocket.truefaces.models.LoginResponse
 import com.n1rocket.truefaces.models.MeResponse
 import com.n1rocket.truefaces.repository.IRepository
+import com.n1rocket.truefaces.ui.screens.login.UiLoginState
 import com.n1rocket.truefaces.utils.readBytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AvatarScreen(
-    viewModel: AvatarViewModel
+    viewModel: AvatarViewModel,
+    onAvatarSuccess: () -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    if (uiState.value.success) {
+        LaunchedEffect(Unit) {
+            onAvatarSuccess()
+        }
+    }
 
     var uri: Uri? by remember { mutableStateOf(null) }
 
@@ -194,5 +203,5 @@ fun AvatarPreview() {
         override suspend fun deleteImage(id: Int): ApiResult<String> {
             TODO("Not yet implemented")
         }
-    }))
+    })){}
 }

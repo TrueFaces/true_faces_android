@@ -58,6 +58,7 @@ class AvatarViewModel @Inject constructor(private val repository: IRepository) :
                 is ApiSuccess -> {
                     _currentUiState.copy(
                         isLoading = false,
+                        success = true,
                         avatar = "avatar",
                     )
                 }
